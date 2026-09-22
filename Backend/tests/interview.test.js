@@ -42,7 +42,7 @@ describe('Interview API', () => {
                 .post('/api/interview')
                 .set('Cookie', cookie)
                 .field('jobDescription', TEST_JD)
-                .attach('resume', buildMinimalPdf('Node.js developer with MongoDB experience'), {
+                .attach('resume', await buildMinimalPdf('Node.js developer with MongoDB experience'), {
                     filename: 'resume.pdf',
                     contentType: 'application/pdf'
                 })

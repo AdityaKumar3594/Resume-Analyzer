@@ -18,8 +18,13 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": [ "<rootDir>/tests/setup.js" ],
-    "coveragePathIgnorePatterns": [ "/node_modules/", "/tests/" ]
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/"
+    ]
   },
   "keywords": [
     "express",
@@ -55,6 +60,7 @@
     "cross-env": "^10.1.0",
     "jest": "^30.5.2",
     "mongodb-memory-server": "^11.3.0",
+    "pdf-lib": "^1.17.1",
     "supertest": "^7.3.0"
   }
 }

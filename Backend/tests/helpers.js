@@ -1,32 +1,23 @@
 /**
- * Builds a tiny but structurally valid PDF containing a single line of text,
- * so tests can exercise the real pdf-parse extraction path without a fixture file.
+ * Builds a small, spec-valid PDF containing a single line of text using
+ * pdf-lib, so tests can exercise the real pdf-parse extraction path
+ * without committing a binary fixture file.
  */
-function buildMinimalPdf(text) {
-    const content = `BT /F1 12 Tf 72 720 Td (${text}) Tj ET`
-    const objects = [
-        '<< /Type /Catalog /Pages 2 0 R >>',
-        '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
-        `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
-    ]
+async function buildMinimalPdf(text) {
+    const { PDFDocument, StandardFonts } = require("pdf-lib")
 
-    let pdf = '%PDF-1.4\n'
-    const offsets = []
-    objects.forEach((obj, index) => {
-        offsets.push(pdf.length)
-        pdf += `${index + 1} 0 obj\n${obj}\nendobj\n`
+    const pdfDoc = await PDFDocument.create()
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const page = pdfDoc.addPage([ 595, 842 ])
+    page.drawText(text, {
+        x: 60,
+        y: 780,
+        size: 12,
+        font
     })
 
-    const xrefStart = pdf.length
-    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
-    offsets.forEach((offset) => {
-        pdf += `${String(offset).padStart(10, '0')} 00000 n \n`
-    })
-    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`
-
-    return Buffer.from(pdf, 'latin1')
+    const bytes = await pdfDoc.save()
+    return Buffer.from(bytes)
 }
 
 const TEST_USER = {
