@@ -41,7 +41,7 @@ export default function useInterviewForm() {
         try {
             await new Promise((resolve) => setTimeout(resolve, 800));
             setResult("Great job! Your interview report is ready. Check your dashboard for detailed next steps.");
-        } catch (err) {
+        } catch {
             setError("Unable to generate report. Please try again.");
         } finally {
             setIsLoading(false);

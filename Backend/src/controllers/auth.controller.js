@@ -1,31 +1,38 @@
 const userModel = require("../models/user.model")
+const tokenBlacklistModel = require("../models/blacklist.model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const tokenBlacklistModel = require("../models/blacklist.model")
+const { asyncHandler, ApiError } = require("../middlewares/error.middleware")
+
+function getCookieOptions() {
+    return {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production"
+    }
+}
+
+function signAuthToken(user) {
+    return jwt.sign(
+        { id: user._id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+    )
+}
 
 /**
- * @name registerUserController
- * @description register a new user, expects username, email and password in the request body
+ * @description Register a new user, expects username, email and password in the request body.
  * @access Public
  */
-async function registerUserController(req, res) {
-
+const registerUserController = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body
-
-    if (!username || !email || !password) {
-        return res.status(400).json({
-            message: "Please provide username, email and password"
-        })
-    }
 
     const isUserAlreadyExists = await userModel.findOne({
         $or: [ { username }, { email } ]
     })
 
     if (isUserAlreadyExists) {
-        return res.status(400).json({
-            message: "Account already exists with this email address or username"
-        })
+        throw new ApiError(409, "Account already exists with this email address or username")
     }
 
     const hash = await bcrypt.hash(password, 10)
@@ -36,22 +43,10 @@ async function registerUserController(req, res) {
         password: hash
     })
 
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
-
-    const cookieOptions = {
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production"
-    }
-
-    res.cookie("token", token, cookieOptions)
-
+    res.cookie("token", signAuthToken(user), getCookieOptions())
 
     res.status(201).json({
+        success: true,
         message: "User registered successfully",
         user: {
             id: user._id,
@@ -59,96 +54,67 @@ async function registerUserController(req, res) {
             email: user.email
         }
     })
-
-}
-
+})
 
 /**
- * @name loginUserController
- * @description login a user, expects email and password in the request body
+ * @description Login a user, expects email and password in the request body.
  * @access Public
  */
-async function loginUserController(req, res) {
-
+const loginUserController = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
     const user = await userModel.findOne({ email })
 
-    if (!user) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
+    // Same message for both cases so the endpoint does not leak which accounts exist.
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+        throw new ApiError(401, "Invalid email or password")
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    res.cookie("token", signAuthToken(user), getCookieOptions())
 
-    if (!isPasswordValid) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
-
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
-
-    const cookieOptions = {
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production"
-    }
-
-    res.cookie("token", token, cookieOptions)
     res.status(200).json({
-        message: "User loggedIn successfully.",
+        success: true,
+        message: "User logged in successfully.",
         user: {
             id: user._id,
             username: user.username,
             email: user.email
         }
     })
-}
-
+})
 
 /**
- * @name logoutUserController
- * @description clear token from user cookie and add the token in blacklist
- * @access public
+ * @description Clear the token cookie and add the token to the blacklist.
+ * @access Public
  */
-async function logoutUserController(req, res) {
+const logoutUserController = asyncHandler(async (req, res) => {
     const token = req.cookies.token
 
     if (token) {
         await tokenBlacklistModel.create({ token })
     }
 
-    const cookieOptions = {
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production"
-    }
-
-    res.clearCookie("token", cookieOptions)
+    res.clearCookie("token", getCookieOptions())
 
     res.status(200).json({
+        success: true,
         message: "User logged out successfully"
     })
-}
+})
 
 /**
- * @name getMeController
- * @description get the current logged in user details.
- * @access private
+ * @description Get the current logged-in user details.
+ * @access Private
  */
-async function getMeController(req, res) {
-
+const getMeController = asyncHandler(async (req, res) => {
     const user = await userModel.findById(req.user.id)
 
-
+    if (!user) {
+        throw new ApiError(404, "User not found.")
+    }
 
     res.status(200).json({
+        success: true,
         message: "User details fetched successfully",
         user: {
             id: user._id,
@@ -156,10 +122,7 @@ async function getMeController(req, res) {
             email: user.email
         }
     })
-
-}
-
-
+})
 
 module.exports = {
     registerUserController,
