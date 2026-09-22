@@ -1,4 +1,4 @@
-import React,{useState}from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import "../auth.form.scss";
@@ -8,15 +8,23 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+    const [error, setError] = useState("");
 
+    const navigate = useNavigate();
     const { loading, handleRegister } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle registration logic here
-        await handleRegister({ username, email, password });
-        navigate('/home');
+        setError("");
+
+        const result = await handleRegister({ username, email, password });
+
+        // Only navigate when the account was actually created.
+        if (result?.success) {
+            navigate('/home');
+        } else {
+            setError(result?.message ?? "Registration failed. Please try again.");
+        }
     }
 
     if (loading) {
@@ -24,7 +32,7 @@ const Register = () => {
             <h1>Loading...</h1>
         </main>)
     }
-    
+
     return (
 
         <main>
@@ -33,7 +41,6 @@ const Register = () => {
                     <label htmlFor="username">Username:</label>
                     <input
                         onChange={(e) => setUsername(e.target.value)}
-
                         type="text" id="username" name="username" placeholder="Enter username" required />
                 </div>
                 <div className="input-group">
@@ -46,8 +53,9 @@ const Register = () => {
                     <label htmlFor="password">Password:</label>
                     <input
                         onChange={(e) => setPassword(e.target.value)}
-                        type="password" id="password" name="password" placeholder="Enter password" required />
+                        type="password" id="password" name="password" placeholder="Enter password (min 8 characters)" required />
                 </div>
+                {error && <p className="form-error" role="alert">{error}</p>}
                 <button className="button primary-button">Register</button>
             </form>
 

@@ -1,8 +1,13 @@
-import { useContext ,useEffect} from "react";
-import { AuthContext } from "../auth.context.jsx";
-import { login,register,logout,getMe } from "../services/auth.api.js";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "../auth.context.js";
+import { login, register, logout, getMe } from "../services/auth.api.js";
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error("useAuth must be used within the AuthProvider");
+    }
+
     const { user, setUser, loading, setLoading } = context;
 
     const handleLogin = async ({ email, password }) => {
@@ -10,8 +15,12 @@ export const useAuth = () => {
         try {
             const data = await login({ email, password });
             setUser(data.user);
+            return { success: true, data };
         } catch (error) {
-            console.error("Login failed:", error);
+            return {
+                success: false,
+                message: error.response?.data?.message ?? "Unable to log in right now."
+            };
         } finally {
             setLoading(false);
         }
@@ -22,10 +31,13 @@ export const useAuth = () => {
         try {
             const data = await register({ username, email, password });
             setUser(data.user);
+            return { success: true, data };
         } catch (error) {
-            console.error("Registration failed:", error);
-        }
-        finally {
+            return {
+                success: false,
+                message: error.response?.data?.message ?? "Unable to register right now."
+            };
+        } finally {
             setLoading(false);
         }
     };
@@ -35,14 +47,14 @@ export const useAuth = () => {
         try {
             await logout();
             setUser(null);
-        }
-        catch (error) {
-            console.error("Logout failed:", error);
-        }
-
-        finally {
+            return { success: true };
+        } catch {
+            return {
+                success: false,
+                message: "Logout failed."
+            };
+        } finally {
             setLoading(false);
-
         }
     };
 
@@ -55,7 +67,7 @@ export const useAuth = () => {
                 } else {
                     setUser(null);
                 }
-            } catch (error) {
+            } catch {
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -63,7 +75,7 @@ export const useAuth = () => {
         };
 
         getAndSetUser();
-    }, []);
+    }, [setUser, setLoading]);
 
     return {
         user,
@@ -73,5 +85,3 @@ export const useAuth = () => {
         handleLogout,
     };
 };
-
-

@@ -1,42 +1,109 @@
 const express = require("express")
-const authMiddleware = require("../middlewares/auth.middleware")
 const interviewController = require("../controllers/interview.controller")
+const { authUser } = require("../middlewares/auth.middleware")
+const { validate } = require("../middlewares/validate.middleware")
+const { aiLimiter } = require("../middlewares/rateLimit.middleware")
 const upload = require("../middlewares/file.middleware")
+const {
+    generateReportSchema,
+    interviewIdParamsSchema,
+    reportIdParamsSchema
+} = require("../validations/interview.validation")
 
 const interviewRouter = express.Router()
 
-
+/**
+ * @openapi
+ * /api/interview:
+ *   post:
+ *     tags: [Interview]
+ *     summary: Generate a new AI interview report
+ *     description: >
+ *       Generates technical/behavioral questions, skill gaps and a preparation
+ *       roadmap by analysing the resume (PDF upload) or self description
+ *       against the job description using Google Gemini.
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [jobDescription]
+ *             properties:
+ *               jobDescription:
+ *                 type: string
+ *                 example: We are looking for a Node.js developer with 2+ years of experience...
+ *               selfDescription:
+ *                 type: string
+ *                 example: I have 2 years of experience building REST APIs with Express and MongoDB.
+ *               resume:
+ *                 type: string
+ *                 format: binary
+ *                 description: Resume as a PDF file (max 3MB)
+ *     responses:
+ *       201:
+ *         description: Interview report generated
+ *       400:
+ *         description: Missing job description, non-PDF upload, or no profile source
+ *       429:
+ *         description: Generation limit reached (10 per 15 minutes)
+ */
+interviewRouter.post("/", authUser, aiLimiter, upload.single("resume"), validate({ body: generateReportSchema }), interviewController.generateInterViewReportController)
 
 /**
- * @route POST /api/interview/
- * @description generate new interview report on the basis of user self description,resume pdf and job description.
- * @access private
+ * @openapi
+ * /api/interview/report/{interviewId}:
+ *   get:
+ *     tags: [Interview]
+ *     summary: Get an interview report by id
+ *     parameters:
+ *       - in: path
+ *         name: interviewId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Interview report
+ *       404:
+ *         description: Report not found for this user
  */
-interviewRouter.post("/", authMiddleware.authUser, upload.single("resume"), interviewController.generateInterViewReportController)
+interviewRouter.get("/report/:interviewId", authUser, validate({ params: interviewIdParamsSchema }), interviewController.getInterviewReportByIdController)
 
 /**
- * @route GET /api/interview/report/:interviewId
- * @description get interview report by interviewId.
- * @access private
+ * @openapi
+ * /api/interview:
+ *   get:
+ *     tags: [Interview]
+ *     summary: List all interview reports of the logged-in user
+ *     responses:
+ *       200:
+ *         description: Reports sorted newest first (summary fields only)
  */
-interviewRouter.get("/report/:interviewId", authMiddleware.authUser, interviewController.getInterviewReportByIdController)
-
+interviewRouter.get("/", authUser, interviewController.getAllInterviewReportsController)
 
 /**
- * @route GET /api/interview/
- * @description get all interview reports of logged in user.
- * @access private
+ * @openapi
+ * /api/interview/resume/pdf/{interviewReportId}:
+ *   post:
+ *     tags: [Interview]
+ *     summary: Generate a tailored resume PDF for an interview report
+ *     parameters:
+ *       - in: path
+ *         name: interviewReportId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: application/pdf stream
+ *       404:
+ *         description: Report not found
+ *       429:
+ *         description: Generation limit reached
  */
-interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInterviewReportsController)
-
-
-/**
- * @route GET /api/interview/resume/pdf
- * @description generate resume pdf on the basis of user self description, resume content and job description.
- * @access private
- */
-interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, interviewController.generateResumePdfController)
-
-
+interviewRouter.post("/resume/pdf/:interviewReportId", authUser, aiLimiter, validate({ params: reportIdParamsSchema }), interviewController.generateResumePdfController)
 
 module.exports = interviewRouter

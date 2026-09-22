@@ -55,5 +55,31 @@ main{
             }
         } 
 
+    .form-error {
+        margin: 0;
+        padding: 0.5rem 0.75rem;
+        border-radius: 10px;
+        background-color: rgba(220, 38, 38, 0.12);
+        color: #dc2626;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .demo-hint {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1.25rem;
+        background: none;
+        border: 1px dashed rgba(255, 255, 255, 0.35);
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+    }
+
 }
 

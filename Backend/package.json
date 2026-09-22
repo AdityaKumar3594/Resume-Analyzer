@@ -1,17 +1,39 @@
 {
-  "name": "genai",
+  "name": "resume-analyzer-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx nodemon server.js",
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "description": "AI interview prep API — analyzes resume + job description with Google Gemini to produce questions, skill gaps, a readiness roadmap and a tailored resume PDF",
+  "main": "server.js",
+  "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npx nodemon server.js",
+    "start": "node server.js",
+    "test": "cross-env NODE_ENV=test jest --runInBand --forceExit",
+    "test:watch": "cross-env NODE_ENV=test jest --runInBand --watch",
+    "test:coverage": "cross-env NODE_ENV=test jest --runInBand --forceExit --coverage",
+    "seed": "node src/scripts/seed.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/"
+    ]
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "gemini",
+    "interview-prep",
+    "resume"
+  ],
+  "author": "Aditya Kumar",
   "dependencies": {
     "@google/genai": "^1.45.0",
     "@sparticuz/chromium": "^143.0.4",
@@ -20,13 +42,25 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.4",
+    "morgan": "^1.12.1",
     "multer": "^2.1.1",
     "pdf-parse": "^1.1.1",
     "puppeteer": "^24.40.0",
     "puppeteer-core": "^24.40.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^4.3.6",
     "zod-to-json-schema": "^3.25.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.5.2",
+    "mongodb-memory-server": "^11.3.0",
+    "pdf-lib": "^1.17.1",
+    "supertest": "^7.3.0"
   }
 }

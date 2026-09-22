@@ -6,37 +6,25 @@ const api = axios.create({
 });
 
 export async function register({ username, email, password }) {
-    try {
-        const res = await api.post('/register', {
-            username,
-            email,
-            password
-        });
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+    const res = await api.post('/register', {
+        username,
+        email,
+        password
+    });
+    return res.data;
 }
 
 export async function login({ email, password }) {
-    try {
-        const res = await api.post('/login', {
-            email,
-            password
-        });
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+    const res = await api.post('/login', {
+        email,
+        password
+    });
+    return res.data;
 }
 
 export async function logout() {
-    try {
-        const res = await api.get('/logout');
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+    const res = await api.get('/logout');
+    return res.data;
 }
 
 export async function getMe() {
@@ -50,4 +38,3 @@ export async function getMe() {
         throw err;
     }
 }
-

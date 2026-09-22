@@ -1,6 +1,6 @@
 import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateResumePdf } from "../services/interview.api"
-import { useContext, useEffect } from "react"
-import { InterviewContext } from "../interview.context"
+import { useContext, useEffect, useCallback } from "react"
+import { InterviewContext } from "../interview.context.js"
 import { useNavigate, useParams } from "react-router"
 
 
@@ -16,7 +16,7 @@ export const useInterview = () => {
 
     const { loading, setLoading, report, setReport, reports, setReports } = context
 
-    const handleAuthError = (error) => {
+    const handleAuthError = useCallback((error) => {
         if (error?.response?.status === 401) {
             setReport(null)
             setReports([])
@@ -24,7 +24,7 @@ export const useInterview = () => {
             return true
         }
         return false
-    }
+    }, [navigate, setReport, setReports])
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
@@ -45,10 +45,10 @@ export const useInterview = () => {
         }
     }
 
-    const getReportById = async (interviewId) => {
+    const getReportById = useCallback(async (reportId) => {
         setLoading(true)
         try {
-            const response = await getInterviewReportById(interviewId)
+            const response = await getInterviewReportById(reportId)
             const reportData = response?.interviewReport ?? null
             setReport(reportData)
             return reportData
@@ -61,9 +61,9 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [handleAuthError, setReport, setLoading])
 
-    const getReports = async () => {
+    const getReports = useCallback(async () => {
         setLoading(true)
         try {
             const response = await getAllInterviewReports()
@@ -79,7 +79,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [handleAuthError, setReports, setLoading])
 
     const getResumePdf = async (interviewReportId) => {
         let response = null
@@ -105,7 +105,7 @@ export const useInterview = () => {
         } else {
             getReports()
         }
-    }, [interviewId])
+    }, [interviewId, getReportById, getReports])
 
     return { loading, report, reports, generateReport, getReportById, getReports, getResumePdf }
 

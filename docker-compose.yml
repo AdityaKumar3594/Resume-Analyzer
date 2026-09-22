@@ -1,0 +1,51 @@
+services:
+  api:
+    build:
+      context: .
+      args:
+        # Point the built frontend at the API container
+        VITE_API_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: mongodb://mongo:27017/resume-analyzer
+      JWT_SECRET: change-me-in-production
+      GOOGLE_GENAI_API_KEY: ${GOOGLE_GENAI_API_KEY:-}
+      NODE_ENV: development
+      CLIENT_URL: http://localhost:5173
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      # mount source for quick iteration without rebuilds
+      - ./Backend:/app
+      - /app/node_modules
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo-data:

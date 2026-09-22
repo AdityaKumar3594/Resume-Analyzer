@@ -34,10 +34,6 @@ const Home = () => {
         }
     }, [profileOpen])
 
-    useEffect(() => {
-        setProfileOpen(false)
-    }, [location.pathname])
-
     const handleGenerateReport = async () => {
         const resumeFile = resumeInputRef.current?.files?.[ 0 ]
         if (!resumeFile && !selfDescription.trim()) {
