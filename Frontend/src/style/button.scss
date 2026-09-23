@@ -1,21 +1,71 @@
-.button{
-    outline: none;
-    border: none;
-    padding-block: 0.75rem;
-    padding-inline: 1.5rem;
-    border-radius: 1rem;
-    cursor: pointer;
+/* Shared button styles — used across landing, auth and app pages */
 
-    transition: all 0.2s ease-in-out;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  outline: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease,
+    border-color 0.18s ease, color 0.18s ease;
+}
 
-    &.primary-button {
-        background-color: #342185;
-        color: white;
-        
-    }
+.btn:active {
+  transform: scale(0.97);
+}
 
-    &:active {
-        transform: scale(0.92);
-    }
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
+.btn--primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+  box-shadow: 0 10px 26px var(--accent-glow);
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px var(--accent-glow);
+}
+
+.btn--outline {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+.btn--outline:hover {
+  border-color: rgba(139, 92, 246, 0.55);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.btn--ghost {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-soft);
+}
+
+.btn--ghost:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-1px);
+}
+
+.btn--lg {
+  padding: 0.85rem 1.8rem;
+  font-size: 1rem;
 }

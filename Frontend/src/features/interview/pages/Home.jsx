@@ -58,13 +58,16 @@ const Home = () => {
     return (
         <div className='home-page'>
 
-            {/* Page Header */}
-            <header className='page-header'>
-                <div className='page-header__text'>
-                    <h1>Create Your Custom <span className='highlight'>Interview Plan</span></h1>
-                    <p>Let our AI analyze the job requirements and your unique profile to build a winning strategy.</p>
-                </div>
-                <div className='page-header__actions'>
+            {/* Top bar */}
+            <header className='home-topbar'>
+                <Link to='/home' className='brand'>
+                    <span className='brand-mark' aria-hidden='true'>
+                        <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' /><path d='M14 2v6h6' /><path d='M9 13h6' /><path d='M9 17h4' /></svg>
+                    </span>
+                    <span className='brand-name'>Resume Analyzer</span>
+                </Link>
+                <div className='home-topbar__actions'>
+                    <Link to='/reports' className='btn btn--ghost'>All Reports</Link>
                     <div className='profile-menu' ref={profileRef}>
                         <button
                             className='profile-btn'
@@ -105,6 +108,14 @@ const Home = () => {
                 </div>
             </header>
 
+            {/* Page Header */}
+            <div className='page-header'>
+                <div className='page-header__text'>
+                    <h1>Create Your Custom <span className='highlight'>Interview Plan</span></h1>
+                    <p>Let our AI analyze the job requirements and your unique profile to build a winning strategy.</p>
+                </div>
+            </div>
+
             {/* Main Card */}
             <div className='interview-card'>
                 <div className='interview-card__body'>
@@ -124,7 +135,7 @@ const Home = () => {
                             placeholder={`Paste the full job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design...'`}
                             maxLength={5000}
                         />
-                        <div className='char-counter'>0 / 5000 chars</div>
+                        <div className='char-counter'>{jobDescription.length} / 5000 chars</div>
                         {formError && <div className='form-error'>{formError}</div>}
                     </div>
 
@@ -223,6 +234,7 @@ const Home = () => {
 
             {/* Page Footer */}
             <footer className='page-footer'>
+                <span>© {new Date().getFullYear()} Resume Analyzer</span>
                 <a href='#'>Privacy Policy</a>
                 <a href='#'>Terms of Service</a>
                 <a href='#'>Help Center</a>
