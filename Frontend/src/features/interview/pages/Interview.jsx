@@ -21,30 +21,16 @@ function Interview() {
 
     if (loading) {
         return (
-            <main className="interview-layout-page">
-                <div className="interview-layout">
-                    <section className="content-column">
-                        <div className="section-header">
-                            <h2>Loading interview report...</h2>
-                            <span>Please wait</span>
-                        </div>
-                    </section>
-                </div>
+            <main className="loading-screen">
+                <h1>Loading your report…</h1>
             </main>
         )
     }
 
     if (!report) {
         return (
-            <main className="interview-layout-page">
-                <div className="interview-layout">
-                    <section className="content-column">
-                        <div className="section-header">
-                            <h2>Report not available</h2>
-                            <span>Please generate a report first.</span>
-                        </div>
-                    </section>
-                </div>
+            <main className="loading-screen">
+                <h1>Report not available — please generate one first.</h1>
             </main>
         )
     }
@@ -131,12 +117,21 @@ function Interview() {
                     ))}
                     <div className="score-box">
                         <p>Match Score</p>
-                        <div className="score-ring"><span>{report.matchScore}%</span></div>
+                        <div
+                            className="score-ring"
+                            style={{ "--score": String(report.matchScore ?? 0) }}
+                        >
+                            <span>{report.matchScore}%</span>
+                        </div>
                         <p className="score-text">Great match for this role.</p>
                     </div>
                 </aside>
 
                 <section className="content-column">
+                    <div className="report-heading">
+                        <span className="badge badge--accent">Interview Report</span>
+                        <h1>{report.title || "Untitled Position"}</h1>
+                    </div>
                     {renderCenter()}
                 </section>
 
